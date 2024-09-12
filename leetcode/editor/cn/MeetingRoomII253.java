@@ -40,7 +40,7 @@ public class MeetingRoomII253 {
             //如果会议室不够用, 那么将新会议放回, 刚才取出作比较的会议也一并放回,重新计算最早结束的时间
             return pq.size();
         }*/
-        
+
         //扫描线做法
         public int minMeetingRooms(List<Interval> intervals) {
 
