@@ -1,0 +1,77 @@
+题目给出了范围
+
+* 
+
+```
+0 <= val <= 10⁴ 
+ 最多调用 addNum 和 getIntervals 方法 3 * 10⁴ 次 
+```
+
+所以这个量级的话直接就都遍历标记出来吧，如果量级上去的话再做其他想法了
+
+- 声明一个布尔型数组`boolean[] arr = new boolean[10003];`长度10003，因为题面的范围是`0 <= val <= 10000`,左边留一位空的右边留一位空的这样就是10003个，我试了下**测试用例好像没有考虑边界值10000的情况，我一开始用的10002的数组居然都跑过了**
+- 然后就是addNum标记哪些数字被加进来了，这里几种情况，
+  1. **如果被加的数字左边右边都是空的，则表示开辟了一个新的区段**
+  2. **如果被加的数字左边或者右边有一个是空的，区段个数不变**
+  3. **如果被加的数字左边或者右边都不是空的，区段个数减一**
+  4. 如果被加的数字之前已经存在，不做任何处理
+  5. 这里没有删除操作，要删除的情况不考虑
+- 然后就挨个遍历那个`new boolean[10003]`数组拿到各个区段信息返回了
+
+# 代码
+
+* 
+
+```
+class SummaryRanges {
+
+    boolean[] arr = new boolean[10003];
+    int count = 0;
+
+    public SummaryRanges() {
+
+    }
+    
+    public void addNum(int val) {
+        val++;
+        if (arr[val]){
+            return;
+        }
+        arr[val] = true;
+        if (arr[val-1] && arr[val+1]){
+            count--;
+        }
+        if (!arr[val-1] && !arr[val+1]){
+            count++;
+        }
+    }
+    
+    public int[][] getIntervals() {
+        int[][] res = new int[count][2];
+        int idx = 0;
+        int arrIdx = 0;
+        while (idx<count){
+            res[idx] = getNextRange(arrIdx);
+            arrIdx = res[idx][1]+2;
+            idx++;
+        }
+        return res;
+    }
+
+    public int[] getNextRange(int offset){
+        int[] range = new int[2];
+        while (!arr[offset]){
+            offset++;
+        }
+        range[0] = offset-1;
+        while (arr[offset]){
+            offset++;
+        }
+        range[1] = offset-2;
+        return range;
+    }
+}
+```
+
+补充下，为了不越界所以在保存数据的时候addNum时，下标加了1。
+getNextRange调用的时候传入的是实际的下标。getNextRange返回的时候是返回的测试用例需要的数字，这里面有一些相对的加1减1的操作，一开始写的时候以为没0下标，所以疏忽了，这样最终导致这块看起来稍微有点乱

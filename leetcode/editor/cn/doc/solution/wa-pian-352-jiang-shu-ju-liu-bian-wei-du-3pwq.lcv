@@ -1,0 +1,81 @@
+### 解题思路
+
+1. 找到比添加数字小的区间, 看看能不能追加到这个区间尾部
+2. 找到比添加数字大的区间, 看看能不能替换这个区间的头部
+3. 如果两个区间都存在, 看看能不能把两个区间连到一起
+4. 只有其中一个区间, 按照位置讨论 , 完全不相交的(不压线)的区间就单独开个
+
+完活
+
+by 瓦片
+
+有帮助的话 , 顺手点个赞 ~ 谢谢
+
+### 代码
+
+* java
+
+```java
+class SummaryRanges {
+	private TreeMap<Integer, Integer> tm;// TreeMap<区间开始,区间结束>
+
+	public SummaryRanges() {
+		tm = new TreeMap<>();
+	}
+
+	public void addNum(int val) {
+		Integer floor = tm.floorKey(val);// 小
+		Integer floorEnd = floor != null ? tm.get(floor) : null;// 小结尾
+		Integer ceil = tm.ceilingKey(val);// 大
+		Integer ceilEnd = ceil != null ? tm.get(ceil) : null;// 大结尾
+		if (ceil != null && floor != null) {// 有大有小
+			if (floorEnd + 1 == val && val + 1 == ceil) {// 将两个连一起
+				tm.put(floor, ceilEnd);
+				tm.remove(ceil);
+			} else if (floorEnd + 1 == val) {// 同小的连一起,变成小的尾巴
+				tm.put(floor, val);
+			} else if (val + 1 == ceil) {// 同大的连一起,变成大的头
+				tm.put(val, ceilEnd);
+				tm.remove(ceil);
+			} else if (val > floorEnd + 1 && val < ceil - 1) {
+				tm.put(val, val);// 位于两者之间
+			}
+		} else if (ceil != null) {// 只有大
+			if (val + 1 == ceil) {
+				tm.put(val, ceilEnd);// 变成大的头
+				tm.remove(ceil);
+			} else if (val < ceil - 1) {
+				tm.put(val, val);// 单独
+			}
+		} else if (floor != null) {// 只有小
+			if (floorEnd + 1 == val) {// 变成小的尾
+				tm.put(floor, val);
+			} else if (val > floorEnd + 1) {
+				tm.put(val, val);// 单独
+			}
+		} else {
+			tm.put(val, val);// 就自己
+		}
+
+	}
+
+	public int[][] getIntervals() {
+		int size = tm.size();
+		int[][] ans = new int[size][2];
+		int p = 0;
+		for (Integer start : tm.keySet()) {
+			ans[p][0] = start;
+			ans[p++][1] = tm.get(start);
+		}
+		return ans;
+	}
+}
+
+/**
+ * Your SummaryRanges object will be instantiated and called as such:
+ * SummaryRanges obj = new SummaryRanges();
+ * obj.addNum(val);
+ * int[][] param_2 = obj.getIntervals();
+ */
+```
+

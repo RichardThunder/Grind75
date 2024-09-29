@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //leetcode submit region begin(Prohibit modification and deletion)
-class Solution {
+class Solution_candidates {
     /*int[] candidates;
     int target;
 
@@ -81,23 +81,22 @@ class Solution {
 
     public static void main(String[] args) {
         int[] array = new int[]{2, 3, 6, 7};
-        Solution s = new Solution();
-        List<List<Integer>> result = s.combinationSum(array, 7);
+        List<List<Integer>> result = combinationSum(array, 7);
         System.out.println(result.toString());
     }
 
-    int[] candidates;
-    int target;
+    static int[] candidates;
+    static int target;
 
-    public List<List<Integer>> combinationSum(int[] candidates, int target){
-        this.candidates = candidates;
-        this.target = target;
+    public static List<List<Integer>> combinationSum(int[] candidates, int target){
+        Solution_candidates.candidates = candidates;
+        Solution_candidates.target = target;
 
         List<List<Integer>> result = new ArrayList<>();
         dfs(result, new ArrayList<>(),0,0);
         return result;
     }
-    public void dfs(List<List<Integer>> res,List<Integer> currList, int sum, int index){
+    public static  void dfs(List<List<Integer>> res,List<Integer> currList, int sum, int index){
         if(sum == target){
             res.add(new ArrayList<>(currList));
             return;

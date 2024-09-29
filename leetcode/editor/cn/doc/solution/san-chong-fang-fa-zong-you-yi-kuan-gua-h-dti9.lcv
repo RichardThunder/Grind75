@@ -1,0 +1,175 @@
+![2EFBC139.jpg](https://pic.leetcode-cn.com/1633750255-KyNdAn-2EFBC139.jpg)
+
+**方法一：list加二分**
+**效率：高
+编写：困难
+长度：长
+**
+首先来一个普普通通的模拟，列表保存区间，这种方式的特点是代码长，但是运行效果很好，伪代码，为了方便，**除1.1所有例子中的index都为0**
+1. 找插入位置
+   1.1 假如插入的是第一个前面，用-1标识 【[[2,3]] 插入1，index为-1】
+   1.2 衡量标准是区间的左边界【[[2,3]],我们以左边界2作为二分依据，右边界3忽略】
+2. 插入
+   因为选位的时候，是偏右的，则插入元素要么是在此位区间内，要么比此位区间大一个，要么比此区间最大值大的超过一个
+   - 区间内，不用做任何处理【[[1,2]] 插入2】
+   - 大一个，看看是不是刚好是下一元素小一个
+     - 是，则把当前右边界改成下一个右边界，并把下一个元素删除【[[0,0],[2,3]] 插入1,刚好比0大1且比2小1，则先把当前index改为下一个右边界[[0,3],[2,3]]，再删掉下一个，[[0,3]]】
+     - 否，则直接改右边界【[[0,0],[3,3]] 插入1,改右边界[[0,1],[3,3]]】
+   - 刚好是下一个减1，合并到右区间【[[0,0],[3,3]] 插入2,改下一个左边界[[0,0],[2,3]]】
+   - 超过一个
+     - 单独插入【[[0,0],[4,4]] 插入2,[[0,0],[2,2],[4,4]]】
+
+* java
+
+```java
+class SummaryRanges {
+        List<int[]> listRanges;
+        public SummaryRanges() {
+            listRanges = new ArrayList<>();
+        }
+
+        public void addNum(int val) {
+            insertNum(findIndex(val),val);
+        }
+
+        private void insertNum(int index, int val){
+            //当前位置右值。假如插入到第一个前面，令当前右为最小值，使得和当前值不靠近
+            int right = index==-1?Integer.MIN_VALUE:listRanges.get(index)[1];
+            //下一个值的左值右值。假如插入到最后一个，另其为最大值，使其不与当前值靠近
+            int nextLeft = index+1 >= listRanges.size()?Integer.MAX_VALUE:listRanges.get(index+1)[0];
+            int nextRight = index+1 >= listRanges.size()?Integer.MAX_VALUE:listRanges.get(index+1)[1];
+            //当前值为右值加1，说明和当前右值挨着，发生和index位置合并
+            //例子：[1,2] 插入3
+            if(val ==right+1){
+                //同时也是下一个的左值减一，说明和下一个左值也挨着，左右两边同时发生合并
+                //1.当前位置右值替换为下一个右值，2.删除下一个元素
+                //例子：[1,2][4,4] 插入3
+                if(val == nextLeft-1){
+                    listRanges.get(index)[1] = nextRight;
+                    listRanges.remove(index+1);
+                }else{
+                    //没有则只进行左合并，无需删除
+                    listRanges.get(index)[1] = val;
+                }
+            }else if(val == nextLeft-1){
+                //也可能当前值是下一个值的前一个
+                //例子：[2,3] 插入1
+                listRanges.get(index+1)[0] = val;
+            }else if(val > right+1){
+                //左右都不挨着，下个位置插入
+                //例子[1,1][5,5] 插入3
+                listRanges.add(index+1,new int[]{val,val});
+            }
+        }
+
+        private int findIndex(int val){
+            int n = listRanges.size();
+
+            //只检查左边界，left默认-1，代表第一个的前面
+            int left = -1;
+            int right = n-1;
+            while(left < right){
+                //二分口诀：左移不变右动补
+                //包含左移left+1时，mid= ((right-left)>>1)+left;
+                //不包含时需要补1，mid = ((right-left+1)>>1)+left;
+                int mid = ((right-left+1)>>1)+left;
+                int target = listRanges.get(mid)[0];
+                if(target<=val){
+                    left = mid;
+                }else{
+                    right = mid-1;
+                }
+            }
+            return left;
+        }
+
+        public int[][] getIntervals() {
+            return listRanges.toArray(new int[0][0]);
+        }
+    }
+```
+
+**方法二：TreeSet**
+方法一太麻烦了，可能要写很久。有没有简单的方法呢？有。
+插入的元素需要保持有序且去重，可以用TreeSet,连续的就记录为当前区间，不连续的就保存上一个区间，再创建一个新的区间。
+**效率：中
+编写：中
+长度：较短**
+
+* java
+
+```java
+class SummaryRanges {
+        TreeSet<Integer> treeSet;
+        public SummaryRanges() {
+            treeSet = new TreeSet<>();
+        }
+
+        public void addNum(int val) {
+            treeSet.add(val);
+        }
+
+        public int[][] getIntervals() {
+            List<int[]> listRanges = new ArrayList<>();
+            int left = -1;
+            int right = -1;
+            int curr = -1;
+            for(Integer nex:treeSet){
+                if(nex == curr){
+                    right = curr;
+                }else{
+                    if(left!=-1)
+                        listRanges.add(new int[]{left,right});
+                    left = nex;
+                    right = left;
+                }
+                curr = right+1;
+            }
+            listRanges.add(new int[]{left,right});
+            return listRanges.toArray(new int[0][0]);
+        }
+    }
+
+```
+
+**方法三：答案数组**
+考虑到题目的数值范围是0到10000，且不重叠，完全可以直接用位图做标识，断了就不记录。
+为了不用对10000的情况特判，数组增加了一个元素
+**效率：低
+编写：中
+长度：短**
+
+* java
+
+```java
+class SummaryRanges {
+        boolean[] hasNum;
+        public SummaryRanges() {
+            hasNum = new boolean[10002];
+        }
+
+        public void addNum(int val) {
+            hasNum[val] = true;
+        }
+
+        public int[][] getIntervals() {
+            List<int[]> listRanges = new ArrayList<>();
+            int left = -1;
+            int right = -1;
+            for(int i = 0; i <= 10001; i++){
+                if(hasNum[i]){
+                    right = i;
+                    if(left == -1)
+                        left = i;
+                }else if(left!=-1){
+                    listRanges.add(new int[]{left,right});
+                    left = -1;
+                    right = -1;
+                }
+            }
+            
+            return listRanges.toArray(new int[0][0]);
+        }
+    }
+```
+

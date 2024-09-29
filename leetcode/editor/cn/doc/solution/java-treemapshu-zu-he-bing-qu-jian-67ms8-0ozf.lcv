@@ -1,0 +1,90 @@
+### 解题思路
+
+1.该题可以视作合并多个区间，并且要求将区间按照顺序输出，且会多次调用，所以直接用数组记录然后遍历输出会超时，需要优化；
+2.使用一个包含所有val值的数组（也可用HashSet代替）记录数值是否被记入；
+3.使用两个TreeMap,分别记录 mapStart（Key : 左边界 ， Value ： 右边界），mapEnd（Key : 右边界 ， Value ： 左边界），第二个TreeMap可用HashMap代替，这里为了看着舒服直接用了TreeMap；
+4.在每加入一个新的数val时，先从数组中判断val是否存在，若存在直接结束；
+若不存在，分为四种情况（val—1 和 val+1 是否存在）：
+①可连接左右两个区间：左区间右边界为val-1,右区间左边界为val+1，则可以通过两个TreeMap查出左区间左边界preStart和右区间右边界afterEnd，然后将它们合并（修改TreeMap）;
+②仅可连接左区间：左区间右边界为val-1,则可以通过mapEnd查出左区间左边界preStart，然后进行合并;
+③仅可连接右区间：右区间左边界为val+1,则可以通过mapStart查出右区间右边界afterEnd，然后进行合并;
+④自成一个长度为1的区间：直接向两个Map中添加；
+5.合并细节见代码注释；
+6.输出仅需遍历输出mapStart内容即可；
+
+### 代码
+
+* java
+
+```java
+class SummaryRanges {
+
+    //（Key : 左边界 ， Value ： 右边界）
+    TreeMap<Integer , Integer> mapStart;
+    //（Key : 右边界 ， Value ： 左边界）
+    TreeMap<Integer , Integer> mapEnd;
+    //标记数组
+    int[] area;
+
+    public SummaryRanges() {
+        mapStart = new TreeMap<>();
+        mapEnd = new TreeMap<>();
+        area = new int[10001];
+    }
+    
+    public void addNum(int val) {
+        //已经存在，直接返回
+        if(area[val] == 1) return;
+        //不存在，设置标记
+        area[val] = 1;
+        //可连接左右两个区间
+        if(val >= 1 && area[val - 1] == 1 && val <= 9999 && area[val + 1] == 1){
+            //合并后新左区间（原左区间左边界）
+            int preStart = mapEnd.get(val - 1);
+            //合并后新右区间（原右区间右边界）
+            int afterEnd = mapStart.get(val + 1);
+            //移除左区间的（Key : 右边界 ， Value ： 左边界）对应关系，因为右边界发生了改变
+            mapEnd.remove(val - 1);
+            //移除右区间的（Key : 左边界 ， Value ： 右边界）对应关系，因为左边界发生了改变
+            mapStart.remove(val + 1);
+            //存入新的区间映射关系（修改）（key值都不变，value发生变化）
+            mapStart.put(preStart , afterEnd);
+            mapEnd.put(afterEnd , preStart);
+        //下同上
+        }else if(val >= 1 && area[val - 1] == 1){
+            int preStart = mapEnd.get(val - 1);
+            mapEnd.remove(val - 1);
+            mapStart.put(preStart , val);
+            mapEnd.put(val , preStart);
+        }else if(val <= 9999 && area[val + 1] == 1){
+            int afterEnd = mapStart.get(val + 1);
+            mapStart.remove(val + 1);
+            mapStart.put(val , afterEnd);
+            mapEnd.put(afterEnd , val);
+        }else{
+            mapStart.put(val , val);
+            mapEnd.put(val,val);
+        }
+    }
+    //遍历mapStart存入数组输出
+    public int[][] getIntervals() {
+        List<int[]> lst = new ArrayList<>();
+        for(Map.Entry<Integer , Integer> entry : mapStart.entrySet()){
+            lst.add(new int[]{entry.getKey() , entry.getValue()});
+        }
+        int[][] res = new int[lst.size()][2];
+        for(int i = 0 ; i < lst.size() ; i++){
+            res[i] = lst.get(i);
+        }
+        return res;
+    }
+}
+
+/**
+ * Your SummaryRanges object will be instantiated and called as such:
+ * SummaryRanges obj = new SummaryRanges();
+ * obj.addNum(val);
+ * int[][] param_2 = obj.getIntervals();
+ */
+```
+

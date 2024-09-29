@@ -69,9 +69,9 @@
  *     }
  * }
  */
-class Solution {
-    public boolean evaluateTree(TreeNode root) {
-
-    }
-}
+//class Solution {
+//    public boolean evaluateTree(TreeNode root) {
+//
+//    }
+//}
 //leetcode submit region end(Prohibit modification and deletion)

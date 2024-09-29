@@ -1,0 +1,57 @@
+这题主要有两个方法，一个是```addNum```，这个比较简单，我们只需要往里面添加元素即可，另一个是```getIntervals```，是用来获取区间的。这题的意思是**只要把连续的区间合并即可**。比如我们添加元素```1，2，3，6，7```如下图所示
+
+![image.png](https://pic.leetcode-cn.com/1633745614-EZXXAC-image.png)
+
+看下代码
+
+* java
+
+```java
+    class SummaryRanges {
+
+        private TreeSet<Integer> set = null;
+
+        public SummaryRanges() {
+            set = new TreeSet<>();
+        }
+
+        //直接添加，主要逻辑交给getIntervals方法
+        public void addNum(int val) {
+            set.add(val);
+        }
+
+        public int[][] getIntervals() {
+            //没法确定返回数组的长度，所以这里使用可变数组list，最后再把它转化为二维数组。
+            List<int[]> resList = new ArrayList<>();
+            Iterator<Integer> iterator = set.iterator();
+            //区间的左边界和右边界
+            int left = -1;
+            int right = -1;
+            while (iterator.hasNext()) {
+                int item = iterator.next();
+                if (left == -1) {
+                    left = right = item;
+                } else {
+                    //连续的要合并
+                    if (right + 1 == item) {
+                        right = item;
+                    } else {
+                        //非连续的，要把前面区间加入到集合resList中
+                        resList.add(new int[]{left, right});
+                        left = right = item;
+                    }
+                }
+            }
+            //把最后一个区间添加到集合resList中
+            resList.add(new int[]{left, right});
+
+            //下面是把list集合转化为二维数组
+            int[][] res = new int[resList.size()][2];
+            for (int i = 0; i < resList.size(); i++) {
+                res[i] = resList.get(i);
+            }
+            return res;
+        }
+    }
+```
+

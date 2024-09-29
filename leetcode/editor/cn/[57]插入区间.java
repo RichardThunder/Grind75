@@ -43,11 +43,12 @@
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 //leetcode submit region begin(Prohibit modification and deletion)
-class Solution4 {
-    public int[][] insert(int[][] intervals, int[] newInterval) {
+class SolutionInsert {
+    /*public int[][] insert(int[][] intervals, int[] newInterval) {
         List<int[]> result = new ArrayList<>();
         boolean inserted = false;
         for (int[] cur : intervals) {
@@ -70,6 +71,59 @@ class Solution4 {
             result.add(newInterval);
         //将ArrayList直接转型为array,需要用占位数组指明数组结构,空间大小可以随意指定,构造时会重新调整
         return result.toArray(new int[0][]);
-    }
+
+        }
+        */
+
+    public int[][] insert(int[][] intervals, int[] newInterval) {
+
+        //List<int[]> list = new ArrayList<>(Arrays.asList(intervals));
+        /*List<int[]> result = new ArrayList<>();
+        boolean isInserted = false;
+        for (int i = 0; i < intervals.length; i++) {
+            int[] curr = intervals[i];
+
+            //已经插入过 || 新区间在后面
+            if(isInserted || curr[1]<newInterval[0]) result.add(curr);
+            //跳过了新区间,说明没有相交
+            else if(newInterval[1] < curr[0]){
+                result.add(newInterval);
+                result.add(curr);
+                isInserted = true;
+            }
+            //其他情况都相交了
+            else {
+                newInterval[0] = Math.min(curr[0],newInterval[0]);
+                newInterval[1] = Math.max(curr[1],newInterval[1]);
+            }
+            }
+        if(!isInserted)
+            result.add(newInterval);
+
+           return result.toArray(new int[0][]);*/
+
+        //这个思路比较简单, 按顺序遍历就好了
+        List<int[]> result = new ArrayList<>();
+        int i=0;
+        //向后遍历, 直到遇到区间
+        while(i< intervals.length && intervals[i][1]< newInterval[0]){
+            result.add(intervals[i]);
+            i++;
+        }
+        //找到了可以合并的区间, 持续合并直到结束,注意边界相邻的情况,相邻也算
+        while(i< intervals.length && intervals[i][0] <= newInterval[1]){
+            newInterval[0] = Math.min(intervals[i][0],newInterval[0]);
+            newInterval[1] = Math.max(intervals[i][1],newInterval[1]);
+            i++;
+        }
+        //插入已经合并完成的区间
+        result.add(newInterval);
+        //合并剩余区间
+        while(i<intervals.length){
+            result.add(intervals[i]);
+            i++;
+        }
+        return result.toArray((new int[0][]));
+        }
 }
 //leetcode submit region end(Prohibit modification and deletion)

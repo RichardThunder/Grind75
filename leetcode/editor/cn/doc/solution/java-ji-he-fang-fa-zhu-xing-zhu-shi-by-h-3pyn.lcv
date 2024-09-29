@@ -1,0 +1,46 @@
+### 解题思路
+
+使用有序的哈希集合方法，来对整个数组进行排序+去重。
+具体的思路，只需要在纸上模拟一下求 `[1, 2, 3, 6, 7]` 区间的过程就好了。
+
+### 代码
+
+* java
+
+```java
+class SummaryRanges {
+    private Set<Integer> set;
+
+    public SummaryRanges() {
+        set = new TreeSet<>();
+    }
+
+    public void addNum(int val) {
+        set.add(val);
+    }
+
+    public int[][] getIntervals() {
+        List<int[]> ret = new ArrayList<>();
+        Iterator<Integer> iterator = set.iterator();
+        // 逐个检查集合中相邻的两个元素
+        int begin = iterator.next(), end = begin;
+        while (iterator.hasNext()) {
+            int t = iterator.next();
+            // 通过比较下一个元素和当前 end 之差是不是1，看看是否需要开始新的区间
+            if (t != end + 1) {
+                // 如果需要更新的话，就先把当前区间放到返回值中，然后再重新开始新的区间
+                ret.add(new int[]{begin, end});
+                begin = t;
+                end = begin;
+            } else {
+                // 否则的话，就更新当前区间的 end
+                end = t;
+            }
+        }
+        // 最后需要把剩余的区间放到返回值中
+        ret.add(new int[]{begin, end});
+        return ret.toArray(new int[ret.size()][]);
+    }
+}
+```
+
